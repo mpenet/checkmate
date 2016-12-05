@@ -54,8 +54,8 @@ The other strategy takes a seq of delays:
 
 ``` clj
 
-(run delay-runner {:delays (exponential-backoff 100)})
-(run delay-runner {:delays (constant-backoff 100)}) ;; try every 100ms
+(run delay-runner {:delays (take 50 (exponential-backoff 100))})
+(run delay-runner {:delays (take 20 (constant-backoff 100))}) ;; try every 100ms
 (run delay-runner {:delays (sane-backoff)})
 
 ;; etc
