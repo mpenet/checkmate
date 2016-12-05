@@ -62,7 +62,6 @@
                    default-callbacks
                    opts)]
         (loop [max (dec max)]
-          (log/info :max max)
           (let [[status ret] (try-or-fail f)]
             (case status
               ::success (when success (success ret))
