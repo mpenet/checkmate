@@ -1,4 +1,5 @@
 # checkmate
+
 A minimalist/extensible lib to handle failures and retries in a gracefull way.
 
 I wanted a few things:
