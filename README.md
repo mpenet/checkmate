@@ -69,7 +69,7 @@ The 3 shown before are just:
 (defn constant-backoff [ms]
   (repeat ms))
 
-(defn exponential-back-off [x]
+(defn exponential-backoff [x]
   (iterate #(* Math/E %) x))
 
 (defn sane-backoff [x]

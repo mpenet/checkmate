@@ -1,4 +1,4 @@
-(defproject cc.qbits/checkmate "0.1.3"
+(defproject cc.qbits/checkmate "0.1.4"
   :description "Retry stuff until it passes or break"
   :url "https://github.com/mpenet/checkmate"
   :license {:name "Eclipse Public License"
