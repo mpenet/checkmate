@@ -16,7 +16,7 @@
 (defn exponential-back-off [x]
   (iterate #(* Math/E %) x))
 
-(defn sane-backoff []
+(defn sane-backoff [x]
   (lazy-cat
    (repeat x 100)
    (repeat x 500)
