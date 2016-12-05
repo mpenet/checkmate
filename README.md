@@ -23,7 +23,7 @@ each `run` takes a `runner` instance and options, which can be
 * `:error`: by default `noop` - function called on intermediary error
 * `:failure`: by default #(throw %) - function called when the run failed
 
-We also supply `logging-callback` that does the same as
+We also supply `logging-callbacks` that does the same as
 `default-callbacks` but logs everything as a tuple of `[state,
 return-or-error]`.
 
@@ -34,12 +34,12 @@ Enough words, code:
 
 ;; the default
 ;; after 10 failed tries without pause it'll retrow last error
-(run max-runner #(... do something])
+(run max-runner #(do something that might fail))
 
 ;; in fact this translates to
 
 (run max-runner
-     #(...)
+     #(do something that might fail)
      {:max 10 ;; try max 10 times
       :success (fn [ret] ret) ;; just return value if ok
       :failure #(throw %) ;; throw on failure after 10 tries
@@ -80,6 +80,9 @@ The 3 shown before are just:
    (repeat x 15000)
    (repeat x 60000)))
 ```
+
+
+The whole lib is under 100 lines, easy to understand, modify, extend.
 
 ## Installation
 
