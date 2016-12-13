@@ -12,10 +12,11 @@ I wanted a few things:
 
 ## Documentation
 
-Right now it has 2 default RetryStrategies implementations (it's a protocol):
+Right now it has 3 default RetryStrategies implementations (it's a protocol):
 
-* delay-runner
-* max-runner
+* `delay-runner`
+* `max-runner`
+* `delay-runner-ch`
 
 each `run` takes a `runner` instance and options, which can be
 
@@ -81,6 +82,10 @@ The 3 shown before are just:
    (repeat x 60000)))
 ```
 
+There's an equivalent of `delay-runner` but that runs in a async/go
+context, `delay-runner-ch`, so timeouts are a bit cheaper, just make
+sure your task is non blocking if you don't want to starve the
+core.async threadpool. The arguments are identical otherwise.
 
 The whole lib is under 100 lines, easy to understand, modify, extend.
 

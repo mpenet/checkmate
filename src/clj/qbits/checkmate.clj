@@ -1,5 +1,6 @@
 (ns qbits.checkmate
   (:require
+   [clojure.core.async :as async]
    [clojure.tools.logging :as log]))
 
 (defprotocol RetryStrategy
@@ -41,7 +42,6 @@
             (merge {:delays (take 100 (constant-backoff 100))}
                    default-callbacks
                    opts)]
-
         (loop [delays delays]
           (let [[status ret :as step] (try-or-fail f)]
             (case status
@@ -70,3 +70,22 @@
                         (if (zero? max)
                           (when failure (failure ret))
                           (recur (dec max)))))))))))
+
+(def delay-runner-ch
+  (reify RetryStrategy
+    (run [this f opts]
+      (let [{:keys [delays success error failure] :as opts}
+            (merge {:delays (take 100 (constant-backoff 100))}
+                   default-callbacks
+                   opts)]
+        (async/go-loop [delays delays]
+          (let [[status ret :as step] (try-or-fail f)]
+            (case status
+              ::success (when success (success ret))
+              ::error (let [[delay & delays] delays]
+                        (if delay
+                          (do
+                            (when error (error ret))
+                            (async/<! (async/timeout delay))
+                            (recur delays))
+                          (when failure (failure ret)))))))))))
