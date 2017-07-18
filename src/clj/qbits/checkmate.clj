@@ -4,12 +4,15 @@
    [clojure.tools.logging :as log]))
 
 (defprotocol RetryStrategy
-  (run [this f opts]))
+  (run [this f opts])
+  (attempt [this f] "Invokes f and returns [::success x] or [::error x]"))
 
-(defn try-or-fail [f]
-  (try [::success (f)]
-       (catch Throwable t
-         [::error t])))
+(defn try-attempt
+  [f]
+  (try
+    [::success (f)]
+    (catch Exception e
+      [::error e])))
 
 (defn constant-backoff [ms]
   (repeat ms))
@@ -43,7 +46,7 @@
                    default-callbacks
                    opts)]
         (loop [delays delays]
-          (let [[status ret :as step] (try-or-fail f)]
+          (let [[status ret :as step] (attempt this f)]
             (case status
               ::success (when success (success ret))
               ::error (let [[delay & delays] delays]
@@ -52,7 +55,9 @@
                             (when error (error ret))
                             (Thread/sleep delay)
                             (recur delays))
-                          (when failure (failure ret)))))))))))
+                          (when failure (failure ret)))))))))
+    (attempt [_ f]
+      (try-attempt f))))
 
 (def max-runner
   (reify RetryStrategy
@@ -62,14 +67,16 @@
                    default-callbacks
                    opts)]
         (loop [max (dec max)]
-          (let [[status ret] (try-or-fail f)]
+          (let [[status ret] (attempt this f)]
             (case status
               ::success (when success (success ret))
               ::error (do
                         (when error (error ret))
                         (if (zero? max)
                           (when failure (failure ret))
-                          (recur (dec max)))))))))))
+                          (recur (dec max)))))))))
+    (attempt [_ f]
+      (try-attempt f))))
 
 (def delay-runner-ch
   (reify RetryStrategy
@@ -79,7 +86,7 @@
                    default-callbacks
                    opts)]
         (async/go-loop [delays delays]
-          (let [[status ret :as step] (try-or-fail f)]
+          (let [[status ret :as step] (attempt this f)]
             (case status
               ::success (when success (success ret))
               ::error (let [[delay & delays] delays]
@@ -88,4 +95,7 @@
                             (when error (error ret))
                             (async/<! (async/timeout delay))
                             (recur delays))
-                          (when failure (failure ret)))))))))))
+                          (when failure (failure ret)))))))))
+
+    (attempt [_ f]
+      (try-attempt f))))
