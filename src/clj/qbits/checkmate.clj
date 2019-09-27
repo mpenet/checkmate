@@ -46,7 +46,7 @@
                    default-callbacks
                    opts)]
         (loop [delays delays]
-          (let [[status ret :as step] (attempt this f)]
+          (let [[status ret] (attempt this f)]
             (case status
               ::success (when success (success ret))
               ::error (let [[delay & delays] delays]
@@ -86,7 +86,7 @@
                    default-callbacks
                    opts)]
         (async/go-loop [delays delays]
-          (let [[status ret :as step] (attempt this f)]
+          (let [[status ret] (attempt this f)]
             (case status
               ::success (when success (success ret))
               ::error (let [[delay & delays] delays]
