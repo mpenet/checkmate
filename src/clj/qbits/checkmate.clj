@@ -99,3 +99,25 @@
 
     (attempt [_ f]
       (try-attempt f))))
+
+(def async-runner-ch
+  (reify RetryStrategy
+    (run [this f opts]
+      (let [{:keys [delays success error failure] :as opts}
+            (merge {:delays (take 100 (constant-backoff 100))
+                    :success identity}
+                   opts)]
+        (async/go-loop [delays delays]
+          (let [ret (async/<! (f))]
+            (cond
+              (instance? Exception ret)
+              (let [[delay_ & delays] delays]
+                (if delay_
+                  (do
+                    (when error (error ret))
+                    (async/<! (async/timeout delay_))
+                    (recur delays))
+                  (when failure (failure ret))))
+
+              :else
+              (when success (success ret)))))))))
