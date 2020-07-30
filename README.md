@@ -1,6 +1,6 @@
 # checkmate
 
-A minimalist/extensible lib to handle failures and retries in a gracefull way.
+A minimalist/extensible lib to handle failures and retries in a graceful way.
 
 I wanted a few things:
 
@@ -20,7 +20,7 @@ Right now it has 3 default RetryStrategies implementations (it's a protocol):
 
 each `run` takes a `runner` instance and options, which can be
 
-* `:success `: by default `identity` - function called on successfull return
+* `:success `: by default `identity` - function called on successful return
 * `:error`: by default `noop` - function called on intermediary error
 * `:failure`: by default #(throw %) - function called when the run failed
 
@@ -34,7 +34,7 @@ Enough words, code:
 (use 'qbits.checkmate)
 
 ;; the default
-;; after 10 failed tries without pause it'll retrow last error
+;; after 10 failed tries without pause it'll rethrow last error
 (run max-runner #(do something that might fail))
 
 ;; in fact this translates to
@@ -57,7 +57,7 @@ The other strategy takes a seq of delays:
 
 (run delay-runner {:delays (take 50 (exponential-backoff 100))})
 (run delay-runner {:delays (take 20 (constant-backoff 100))}) ;; try every 100ms
-(run delay-runner {:delays (sane-backoff)})
+(run delay-runner {:delays (sane-backoff 2)}) ;; max 10 tries (2 of each delay)
 
 ;; etc
 
